@@ -47,26 +47,7 @@ else
 }
 
 
-<form id="theform" method="post">
 
-
-    <label id="label1" for="dataentry">Customer Name:</label>&nbsp;&nbsp;
-    <input type="text" id="dataentry" name="dataentry"
-           value="@myname" />
-    <br /><br />
-    <div class="row">
-        <div class="offset-1">
-            <button type="submit" id="theButton" name="theButton"
-                    value="submit" class="btn btn-primary">
-                Submit
-            </button>&nbsp;&nbsp;
-            <button type="submit" id="theButton" name="theButton"
-                    value="reset" class="btn btn-light">
-                Reset
-            </button>
-        </div>
-    </div>
-</form>
 
 @if (IsPost)
 {
@@ -108,30 +89,41 @@ else
     choices = "";
 }
 
-
 <form id="theform" method="post">
-    <div class="row">
-        <div class="offset-1">
-            <label id="lblGameGroup">Please select the meal entries of your choice:</label><br />
-            <input type="checkbox" id="GameGroup" name="GameGroup" value="Steak"
-                   @(Array.IndexOf(choices.Split(','), "Steak") >= 0 ? "checked" : "") />Steak<br />
-            <input type="checkbox" id="GameGroup" name="GameGroup" value="Seafood"
-                   @(Array.IndexOf(choices.Split(','), "Seafood") >= 0 ? "checked" : "") />Seafood<br />
-            <input type="checkbox" id="GameGroup" name="GameGroup" value="Vegatables"
-                   @(Array.IndexOf(choices.Split(','), "Vegatables") >= 0 ? "checked" : "") />Vegatables<br />
 
-        </div>
-    </div>
+
+    <label id="label1" for="dataentry">Customer Name:</label>&nbsp;&nbsp;
+    <input type="text" id="dataentry" name="dataentry"
+           value="@myname" />
+    <br /><br />
     <div class="row">
-        <div class="offset-1">
-            <button type="submit" id="theButton" name="theButton"
-                    value="submit" class="btn btn-primary">
-                Submit
-            </button>&nbsp;&nbsp;
-            <button type="submit" id="theButton" name="theButton"
-                    value="reset" class="btn btn-light">
-                Reset
-            </button>
+        <div class="col-6">
+            <div class="offset-1">
+                <button type="submit" id="theButton" name="theButton"
+                        value="submit" class="btn btn-primary">
+                    Submit
+                </button>&nbsp;&nbsp;
+                <button type="submit" id="theButton" name="theButton"
+                        value="reset" class="btn btn-light">
+                    Reset
+                </button>
+            </div>
+               <div class="col-6">
+                    <div class="offset-1">
+                        <strong><label id="lblGameGroup">Choice your meal items:</label></strong><br />
+                        <input type="checkbox" id="GameGroup" name="GameGroup" value="Steak"
+                               @(Array.IndexOf(choices.Split(','), "Steak") >= 0 ? "checked" : "") />Steak<br />
+                        <input type="checkbox" id="GameGroup" name="GameGroup" value="Seafood"
+                               @(Array.IndexOf(choices.Split(','), "Seafood") >= 0 ? "checked" : "") />Seafood<br />
+                        <input type="checkbox" id="GameGroup" name="GameGroup" value="Vegatables"
+                               @(Array.IndexOf(choices.Split(','), "Vegatables") >= 0 ? "checked" : "") />Vegatables<br />
+
+                    </div>
+                </div>
         </div>
     </div>
 </form>
+
+
+       
+  
