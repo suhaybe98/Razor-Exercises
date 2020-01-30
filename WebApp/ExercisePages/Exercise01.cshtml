@@ -1,9 +1,15 @@
-﻿@{
+﻿
+@{
     Layout = "~/_Layout.cshtml";
-    Page.Title = string.Format("Razor - {0}", "Exercise 01");
+    Page.Title = string.Format("Razor - {0}", "Form with Text Box");
 
+    //retreive the data entered into the input controls
+    //var datatype: resolves at execution time
+    //to access a control of your page use: Request.Form["control parameter name"]
+    //the data returned comes in as a STRING
     var myname = Request.Form["dataentry"];
     var thebutton = Request.Form["theButton"];
+    //any other additional processing such as database access
 
     string choices = "";
 }
@@ -12,11 +18,9 @@
     <h1>@Page.Title</h1>
 }
 
+<!-- determine if the page is a postback or not-->
 @if (IsPost)
 {
-     var thebutton1 = Request.Form["theButton"];
-    choices = Request.Form["food"];
-
     <p>IsPost = true</p>
     //this true path is done IF this page is returning
     //from the previous sending
@@ -24,57 +28,71 @@
     //IF you have multiple buttons on your form, you SHOULD
     //determine which button was pressed; thus; dictating WHICH
     //logic is to be EXECUTED
+
+    choices = Request.Form["food"];
     if (thebutton.Equals("submit"))
     {
         //the Press Me button was pressed
         if (string.IsNullOrEmpty(myname))
         {
             <p style="color:firebrick">You don't have a name?</p>
-            myname = "";
-            choices = "";
         }
         else
         {
             <p>Hello there @myname</p>
-
         }
     }
     else
     {
         //the Reset button was pressed
         myname = "";
-        choices = "";
         <p>You pressed the Reset button</p>
     }
-}
-else
-{
-   
-
-    if (choices.IsEmpty())
+    if (thebutton.Equals("reset"))
     {
-        <p style="color:firebrick">please select a food</p>
+        <p>You pressed the Reset button.</p>
         choices = "";
     }
     else
     {
-        //for a checkbox list, your choices will be a set of strings
-        //   separated by a delimiter (in this case is a comma)
-        //to divide up this set of strings use the .Split(delimiter) method
-        //to process the collection of strings in choices, consider using foreach
-        <p>
-            I see you like these meals:
-            <ul>
-                @foreach (var platform in choices.Split(','))
-                {
-                    <li>@platform</li>
-                }
-            </ul>
-        </p>
+        if (choices.IsEmpty())
+        {
+            <p style="color:firebrick">You havent made a meal selection</p>
+            choices = "";
+        }
+        else
+        {
+            <p>@choices</p>
+            var choicesarray = choices.Split(',');
+            for (int i = 0; i < choicesarray.Length; i++)
+            {
+                <p>Choice @i: @choicesarray[i]</p>
+            }
+            //for a checkbox list, your choices will be a set of strings
+            //   separated by a delimiter (in this case is a comma)
+            //to divide up this set of strings use the .Split(delimiter) method
+            //to process the collection of strings in choices, consider using foreach
+            <p>
+                I see you like these meals:
+                <ul>
+                    @foreach (var platform in choices.Split(','))
+                    {
+                        <li>@platform</li>
+                    }
+                </ul>
+            </p>
+        }
     }
-    
+
 }
- 
+else
+{
+    // use to initialize items on your form BEFORE it is sent
+    // to the user for the FIRST time.
+    <p>IsPost = false</p>
+    choices = "";
+}
+
 
 
 
