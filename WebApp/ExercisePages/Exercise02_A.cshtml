@@ -1,0 +1,91 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = string.Format("Razor - {0}", "Exercise02_A");
+
+    //output variables
+    string artistid = "";
+    string artistname = "";
+
+    //input variables for web controls
+    var artistarg = Request.Form["artistArg"];
+    var thebutton = Request.Form["theButton"];
+
+    
+}
+
+@section banner {
+    <h1>@Page.Title</h1>
+}
+
+@if (IsPost)
+{
+    <p>IsPost = true</p>
+    if (thebutton.Equals("reset"))
+    {
+        <p style="color:darkblue">The Reset Button was just Pressed</p>
+        artistarg = "";
+        artistid = "";
+    }
+    else  //user must have pressed the submit
+    {
+        //connect to the database
+        //use the name attribute off your web connection string
+
+        var db = Database.Open("CHINOOK");
+
+
+        string sqlcommand1 = "SELECT ArtistId, Name FROM Artists WHERE Name LIKE @0 ORDER BY Name";
+        var partialstring = "%" + artistarg + "%";
+        var results = db.Query(sqlcommand1, partialstring);
+        //always check if you even have results
+
+        if (results.Count() == 0)
+        {
+            <p style="color:firebrick">There was no record returned from the Data Base</p>
+            artistarg = "";
+            artistid = "";
+        }
+        else
+        {
+            //yes products:
+            //pass ddl value (CategoryID) to next page
+            // to go to another page use Response.Redirect(pagename) (GET method)
+            // to pass data along with the page
+            // add a ? after the name
+            // add for each parameter a coded pair of    label = value
+            // separate data pairs with an  &
+            // sample syntax    Response.Redirect(page.ext?lbl=value[&lbl=value ...])
+            //WARNING: value are passed in plain text on Url
+            Response.Redirect("Exercise02_B?cid=" + artistarg);
+
+        }
+    }
+}
+else
+{
+    <p>IsPost = false</p>
+    <p style="color:darkblue">The Data Base has NOT been queried</p>
+    artistarg = "";
+}
+
+
+<form id="theform" method="post">
+    <div class="row">
+        <div class="col-3">
+            <div class="offset-1">
+                <label id="lblartistArg" for="artistArg">Enter a partial artist name:</label>&nbsp;&nbsp;
+                <input type="text" id="artistArg" name="artistArg"
+                       value="@artistarg" placeholder="partial artist name" />
+                <br /><br />
+                <button type="submit" id="theButton" name="theButton"
+                        value="submit" class="btn btn-primary">
+                    Fetch
+                </button>&nbsp;&nbsp;
+                <button type="submit" id="theButton" name="theButton"
+                        value="reset" class="btn btn-light">
+                    Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
