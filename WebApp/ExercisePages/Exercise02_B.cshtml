@@ -26,55 +26,82 @@
     //connect to the database
     //use the name attribute off your web connection string
 
-    var db = Database.Open("CHINOOK");
-
-    //create the sql command to be executed on the database
-    //input parameters will be represented by the use of placeholders
-    //placeholders are indexes (0, 1, 2,...)
-    //your command can use multiple placeholders
-
-    //how to use the LIKE command in SQL
-    //WHERE Name LIKE 'a%'	Finds any values that start with "a"
-    //WHERE Name LIKE '%a'	Finds any values that end with "a"
-    //WHERE Name LIKE '%or%'	Finds any values that have "or" in any position
-    //WHERE Name LIKE '_r%'	Finds any values that have "r" in the second position
-    //WHERE Name LIKE 'a__%'	Finds any values that start with "a" and are at least 3 characters in length
-    //WHERE Name LIKE 'a%o'	Finds any values that start with "a" and ends with "o"
-
-    string sqlcommand1 = "SELECT ArtistId, Name FROM Artists WHERE Name LIKE @0 ORDER BY Name";
-    var partialstring = "%" + cid + "%";
-    var results = db.Query(sqlcommand1, partialstring);
-    if (results.Count() == 0)
-    {
-        <p style="color:firebrick">There was no record returned from the Data Base</p>
-    }
-    else
-    {
-        <p style="color:darkgreen">There was @results.Count() record/s returned from the Data Base</p>
-
-    }
+    
 }
+
 
 @section banner {
     <h1>@Page.Title</h1>
 }
 
-
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Artist Name</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var row in results)
+@if (IsPost)
+{
+    //obtain my data from the form
+    var choice = Request.Form["results"];
+    //check for a selection
+    if (choice.Equals("0"))
+    {
+        <p style="color:firebrick">Select a product category to view:</p>
+    }
+    else
+    {
+        var prodquery = @"SELECT ArtistId, Name FROM Artists WHERE Name LIKE @0 ORDER BY Name";
+        var prodinfo = db.Query(prodquery, choice);
+        //      check to see if there are products for category
+        if (prodinfo.Count() == 0)
         {
-            <tr>
-                <td>@row.ArtistId</td>
-                <td>@row.Name</td>
-            </tr>
+            <p style="color:firebrick">There are no Artists for the selected category.</p>
         }
-    </tbody>
-</table>
+        else
+        {
+            //yes products:
+            //pass ddl value (CategoryID) to next page
+            // to go to another page use Response.Redirect(pagename) (GET method)
+            // to pass data along with the page
+            // add a ? after the name
+            // add for each parameter a coded pair of    label = value
+            // separate data pairs with an  &
+            // sample syntax    Response.Redirect(page.ext?lbl=value[&lbl=value ...])
+            //WARNING: value are passed in plain text on Url
+            Response.Redirect("WebGridDisplay.cshtml?cid=" + choice);
+        }
+    }
+}
+else
+{
+    //on page initialization (1st time)
+    //testing for an empty collection uses the .Count() method
+    //the .Query() command will give you a collection of 0, 1 or more records
+    if (catinfo.Count() == 0)
+    {
+        <p style="color:firebrick">There are no categories on file.</p>
+    }
+}
+
+
+
+<form id="theform" method="post">
+    <div class="offset-3">
+        <label id="lblArtistList" for="ArtistList">Select artist category to view:</label>
+        &nbsp;&nbsp;
+        <select id="results" name="results">
+            <option value="0">select ....</option>
+            @foreach (var item in catinfo)
+            {
+                //walk through the record collection of Category records
+                //for each record in the collection you will create an option line
+                //the display text will be the CategoryName
+                //the value attribute will use the CategoryID (FKey on Products)
+                //reminder of data access on a record
+                // a) index   syntax item[index]
+                // b) property name  syntax item.PropertyName (column title on the SQL select)
+                <option value="@item.ArtistId">@item.Name</option>
+            }
+        </select>
+        &nbsp;&nbsp;
+        <button type="submit" id="theButton" name="theButton" value="submit"
+                class="btn btn-primary">
+            View Artist Albums ...
+        </button>
+    </div>
+</form>
