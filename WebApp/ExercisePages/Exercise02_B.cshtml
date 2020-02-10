@@ -18,15 +18,13 @@
         Response.Redirect("Exercise02_A.cshtml");
     }
 
-    //this page will access the database when the submit button is pressed
-    //the project needs access to 2 more NuGet packages
-    //Microsoft.Aspnet.WebPages.Data
-    //Microsoft.Aspnet.Webpages.WebData
+   
 
-    //connect to the database
-    //use the name attribute off your web connection string
+    var db = Database.Open("CHINOOK");
 
-    
+    string sqlcommand1 = "SELECT ArtistId, Name FROM Artists WHERE Name LIKE @0 ORDER BY Name";
+    var partialstring = "%" + cid + "%";
+    var results = db.Query(sqlcommand1, partialstring);
 }
 
 
@@ -48,7 +46,7 @@
         var prodquery = @"SELECT ArtistId, Name FROM Artists WHERE Name LIKE @0 ORDER BY Name";
         var prodinfo = db.Query(prodquery, choice);
         //      check to see if there are products for category
-        if (prodinfo.Count() == 0)
+        if (results.Count() == 0)
         {
             <p style="color:firebrick">There are no Artists for the selected category.</p>
         }
@@ -63,7 +61,7 @@
             // separate data pairs with an  &
             // sample syntax    Response.Redirect(page.ext?lbl=value[&lbl=value ...])
             //WARNING: value are passed in plain text on Url
-            Response.Redirect("WebGridDisplay.cshtml?cid=" + choice);
+            Response.Redirect("Exercise02_C.cshtml?cid=" + choice);
         }
     }
 }
@@ -72,7 +70,7 @@ else
     //on page initialization (1st time)
     //testing for an empty collection uses the .Count() method
     //the .Query() command will give you a collection of 0, 1 or more records
-    if (catinfo.Count() == 0)
+    if (results.Count() == 0)
     {
         <p style="color:firebrick">There are no categories on file.</p>
     }
@@ -86,7 +84,7 @@ else
         &nbsp;&nbsp;
         <select id="results" name="results">
             <option value="0">select ....</option>
-            @foreach (var item in catinfo)
+            @foreach (var item in results)
             {
                 //walk through the record collection of Category records
                 //for each record in the collection you will create an option line
@@ -95,7 +93,7 @@ else
                 //reminder of data access on a record
                 // a) index   syntax item[index]
                 // b) property name  syntax item.PropertyName (column title on the SQL select)
-                <option value="@item.ArtistId">@item.Name</option>
+                <option value="@item.Name">@item.Name</option>
             }
         </select>
         &nbsp;&nbsp;

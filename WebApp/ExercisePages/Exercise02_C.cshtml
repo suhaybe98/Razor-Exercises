@@ -17,20 +17,15 @@
 
     //use data to lookup products
     var db = Database.Open("CHINOOK");
-    var prodquery = @"SELECT Name FROM Artists
-    WHERE ArtistId = @0    
-    SELECT AlbumId, Title, ReleaseYear, ReleaseLabel 
-    FROM Albums
-    WHERE ArtistId = @0    
+    var prodquery = @"SELECT ArtistId, Title, ReleaseYear, ReleaseLabel 
+    FROM Albums 
+    WHERE ArtistId = (select ArtistId from Artists where Name = @0)    
     ORDER BY Title";
     var prodinfo = db.Query(prodquery, cid);
 
-    var catquery = @"SELECT CategoryName
-                    FROM Categories
-                    WHERE CategoryID = @0";
-    var catname = db.QueryValue(catquery, cid);
+    
 
-
+   
     //setup display to use the class WebGrids
     //assign the display data to the instance when it is created
     //to alter the number of rows display by the WebGrid instance,
@@ -44,7 +39,7 @@
     <h1>WebGrid Display</h1>
 }
 <div class="offset-1">
-    <h3>Products for Category: @catname</h3>
+    
     <div class="col-11">
         @gridinstance.GetHtml(
             tableStyle: "table table-striped table-bordered table-hover",
@@ -52,11 +47,11 @@
             firstText: "Start",
             lastText: "End",
             columns: gridinstance.Columns(
-               gridinstance.Column(columnName: "ProductID", header: "ID"),
-               gridinstance.Column(columnName: "ProductName", header: "Name"),
-               gridinstance.Column(columnName: "UnitPrice", header: "$", canSort: false,
-                    format: (item) => item.UnitPrice.ToString("0.00")),
-               gridinstance.Column(columnName: "UnitsInStock", header: "QoH", canSort: false)          
+               gridinstance.Column(columnName: "ArtistId", header: "ID"),
+                gridinstance.Column(columnName: "Title", header: "Title"),
+               gridinstance.Column(columnName: "ReleaseYear", header: "Release"),
+               gridinstance.Column(columnName: "ReleaseLabel", header: "Label")
+                       
 ))
     </div>
 </div>
