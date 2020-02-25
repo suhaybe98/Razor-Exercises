@@ -1,0 +1,45 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = string.Format("Razor - {0}", "Exercise04_A");
+
+    var productsearch = Request.Form["ProductSearch"];
+
+    var db = Database.Open("CHINOOK");
+    var partialsearchstring = "%" + productsearch + "%";
+
+    var queryStatement = "SELECT AlbumId, Title, ArtistId, "
+                        + "ReleaseYear, ReleaseLabel "
+                        + "FROM Albums "
+                        + "WHERE AlbumId like @0 ";
+    var queryProducts = db.Query(queryStatement, partialsearchstring);
+}
+@section banner{<h1>@Page.Title</h1>}
+
+<form id="theForm" action="" method="post">
+    <div class="col-sm-3">
+        <label id="forProductSearch">Product Name</label><br />
+        <input type="text" name="ProductSearch" value="@productsearch"><br /><br />
+        <button type="submit" class="btn btn-primary" name="Search" id="theSearch">Search</button>
+    </div><br />
+</form>
+<div class="col-sm-8">
+    @if (IsPost)
+    {
+        if (productsearch.IsEmpty())
+        {
+            <p><strong><span style="color:firebrick">Enter a product name (or partial name).</span></strong></p>
+        }
+        else
+        {
+
+            if (queryProducts.Count() == 0)
+            {
+                <p><strong><span style="color:firebrick">Nothing found for search argument.</span></strong></p>
+            }
+            else
+            {
+                Response.Redirect("Exercise02_C.cshtml?pid=" + productsearch);
+            }
+        }
+    }
+</div>
