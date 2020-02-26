@@ -1,268 +1,38 @@
 ﻿@{
     Layout = "~/_Layout.cshtml";
-    Page.Title = string.Format("Razor - {0}", "Exercise04_B");
+    Page.Title = string.Format("Razor - {0}", "Exercise04_B.cshtml");
 
     var pid = Request.QueryString["pid"];
-    if (pid.IsEmpty())
+    <p>A search was done with the following partial string for ProductName: @pid</p>
+
+    if (string.IsNullOrEmpty(pid))
     {
         Response.Redirect("Exercise04_A.cshtml");
     }
 
-    var discontinued = Request.Form["Discontinued"];
-    var thebutton = Request.Form["theButton"];
-    var AlbumId = Request.Form["AlbumId"];
-    var Title = Request.Form["Title"];
-    var ArtistId = Request.Form["ArtistList"];
-    var ReleaseYear = Request.Form["ReleaseYear"];
-    var ReleaseLabel = Request.Form["ReleaseLabel"];
+     var db = Database.Open("CHINOOK");
+    var partialstring = "%" + pid + "%";
+    var prodquery = @"SELECT AlbumId, Title, "
+                + "ReleaseYear, ReleaseLabel "
+                + "FROM Albums "
+                + "WHERE Title LIKE @0 "
+                + "ORDER BY Title";
+    var prodinfo = db.Query(prodquery, partialstring);
 
-
-    var message = "";
-
-    //these are validator controls execute on the server side
-
-
-    Validation.Add("Title",
-         Validator.Required("Title name is required"),
-          Validator.StringLength(160, 1, "Title name is limited to 160 characters"));
-
-    Validation.Add("ArtistId",
-         Validator.Range(1, 500, "ArtistId is required"));
-
-    Validation.Add("ReleaseLabel",
- Validator.StringLength(40, 0, "Quantity per unit is limited to 50 characters"));
-
-
-    Validation.Add("ReleaseYear",
-        Validator.Required("ReleaseYear is required."),
-        Validator.Range(1950, DateTime.Today.Year, "ReleaseYear must be between 1950 and this year inclusive "));
-
-    if (IsPost)
-    {
-        //discontinued is a checkbox
-        //the possible values from the check box is null (not checked) or "on" (checked)
-        //the acceptable sql values for a bit are 0 and 1
-        if (discontinued == null)
-        {
-            discontinued = "0";
-        }
-        else
-        {
-            discontinued = "1";
-        }
-    }
-    else
-    {
-        AlbumId = pid;
-        discontinued = "0";
-    }
-    var db = Database.Open("CHINOOK");
-
-    var Namequery = "SELECT ArtistId, Name "
-            + "FROM Artists "
-            + "Order by Name";
-    
-    var Artistlist = db.Query(Namequery);
-
-    var queryStatement = "SELECT AlbumId, Title, ArtistId, "
-                        + "ReleaseYear, ReleaseLabel "
-                        + "FROM Albums "
-                        + "WHERE AlbumId  = @0";
-    var queryProducts = db.QuerySingle(queryStatement, pid);
-    if (queryProducts == null)
-    {
-        message = "Product NOT found";
-    }
+    var grid = new WebGrid(prodinfo, rowsPerPage: 5);
 }
-
-@section head{
-    @*<link href="~/Content/MyCssCopy.css" rel="stylesheet" />*@
-}
-
-@section banner{
-    <h1>@Page.Title</h1>
-}
-@if (IsPost)
-{
-    if (thebutton.Equals("backtosearch"))
-    {
-        Response.Redirect("ProductSearch.cshtml");
-    }
-
-    if (Validation.IsValid())
-    {
-        try
-        {
-            if (thebutton.Equals("discontinue"))
-            {
-                var sqlcommand = "UPDATE Albums  SET "
-                                + "Discontinued = 1 "
-                                + "WHERE AlbumId  = @0";
-                var rowsaffected = db.Execute(sqlcommand, AlbumId);
-                if (rowsaffected > 0)
-                {
-                    discontinued = "1";
-                    message = "Product has been DISCONTINUED";
-                }
-                else
-                {
-                    message = "Product NOT found";
-                }
-            }
-            else if (thebutton.Equals("update"))
-            {
-
-                var sqlcommand = "UPDATE Albums SET "
-                                + "Title = @0, "
-                                + "ArtistId = @1, "
-                                + "ReleaseYear = @2, "
-                                + "ReleaseLabel = @3, "
-                                + "WHERE AlbumId = @4";
-                var rowsaffected = db.Execute(sqlcommand, Title,
-                    ArtistId.Equals("0") ? null : ArtistId,
-                    string.IsNullOrEmpty(ReleaseYear) ? null : ReleaseYear,
-                    string.IsNullOrEmpty(ReleaseLabel) ? null : ReleaseLabel,
-                    discontinued, AlbumId);
-                if (rowsaffected > 0)
-                {
-                    message = "Product has been UPDATED";
-                }
-                else
-                {
-                    message = "Product NOT found";
-                }
-            }
-            else if (thebutton.Equals("delete"))
-            {
-                var deleteStatement = "Delete Albums  WHERE AlbumId  = @0";
-
-                var rows = db.Execute(deleteStatement, AlbumId);
-                if (rows == 1)
-                {
-                    message = "Product has been DELETED";
-                }
-                else
-                {
-                    message = "Product NOT found";
-                }
-
-
-
-                AlbumId = "";
-                Title = "";
-                ArtistId = "0";
-                ReleaseYear = "";
-                ReleaseLabel = "";
-                discontinued = "0";
-            }
-        }
-        catch (Exception ex)
-        {
-            <div class="col-12 text-center">
-                <p style="color:firebrick; font-size:large">
-                    Processing error: @ex.Message
-                </p>
-            </div>
-        }
-    }
-}
-else //IsPost=false
-{
-    if (message != "Product NOT found")
-    {
-        AlbumId = queryProducts.AlbumId.ToString();
-        Title = queryProducts.Title;
-        ArtistId = queryProducts.ArtistId == null ? "0" : queryProducts.ArtistId.ToString();
-
-        ReleaseYear = queryProducts.ReleaseYear;
-        ReleaseLabel = queryProducts.ReleaseLabel == null ? "" : queryProducts.ReleaseLabel.ToString();
-
-        discontinued = queryProducts.Discontinued.ToString();
-    }
-
-}
-@Html.ValidationSummary()
-<form id="theForm" action="" method="post">
-    <div class="row row-cols-2">
-        <div class="col text-right">
-            <label id="lblTitle" for="Title">Title</label>
-        </div>
-        <div class="col text-left">
-            <input type="text" name="Title" value="@Title" />
-        </div><br />
-        <div class="col text-right">
-            <label id="lblArtistList" for="ArtistList">Artist</label>
-        </div>
-        <div class="col text-left">
-            <select name="ArtistList">
-                <option value="0">select...</option>
-                @foreach (var acollectionrow in Artistlist)
-                {
-                    if (acollectionrow.Name.ToString() == ArtistId)
-                    {
-                        <option value="@acollectionrow[0]" selected>@acollectionrow[1]</option>
-                    }
-                    else
-                    {
-                        <option value="@acollectionrow[0]">@acollectionrow[1]</option>
-                    }
-                }
-            </select>
-        </div><br />
-
-        <div class="col text-right">
-            <label id="lblReleaseYeart" for="ReleaseYear">Year</label>
-        </div>
-        <div class="col text-left">
-            <input type="text" name="ReleaseYear" value="@ReleaseYear" />
-        </div><br />
-        <div class="col text-right">
-            <label id="lblReleaseLabel" for="ReleaseLabel">Label</label>
-        </div>
-        <div class="col text-left">
-            <input type="text" name="ReleaseLabel" value="@ReleaseLabel" />
-        </div><br />
-        <div class="col text-left">
-            @if (discontinued.Equals("True") || (discontinued == "1"))
-            {
-                <input type="checkbox" name="Discontinued" checked value="1" />
-            }
-            else
-            {
-                <input type="checkbox" name="Discontinued" value="0" />
-            }
-        </div><br />
+@section banner {<h1>@Page.Title</h1>}
+<div class="offset-1">
+    <div class="col-11">
+        @grid.GetHtml("table table-bordered table-striped table-hover",
+        mode: WebGridPagerModes.All,
+        lastText: "Last",
+        firstText: "First",
+        columns: grid.Columns(
+            grid.Column(columnName: "AlbumId", header: "ID"),
+            grid.Column(columnName: "Title"),
+            grid.Column(columnName: "ReleaseYear", header: "Release Year"),
+            grid.Column(columnName: "ReleaseLabel", header: "ReleaseLabel"),
+            grid.Column(header: "", format: @<text><a href="~/ExercisePages/Exercise04_C.cshtml?pid=@item.AlbumId">Edit</a></text>)));
     </div>
-    <div class="row">
-        <div class="col-12 text-center">
-            <button type="submit" name="theButton" id="theUpdate" class="btn btn-primary"
-                    value="update">
-                Update
-            </button>&nbsp;&nbsp;&nbsp;
-            <button type="submit" name="theButton" id="theDiscontinue" class="btn btn-primary" formnovalidate
-                    value="discontinue">
-                Discontinue
-            </button>&nbsp;&nbsp;&nbsp;
-            <button type="submit" name="theButton" id="theDelete" class="btn btn-primary" formnovalidate
-                    value="delete">
-                Delete Record
-            </button>&nbsp;&nbsp;&nbsp;
-            <button type="submit" name="theButton" id="theCancel" class="btn btn-primary" formnovalidate
-                    value="backtosearch">
-                Back to Search
-            </button>
-        </div>
-    </div>
-    @* confirmation can be done on a button click using javascript
-        we will ask the user to confirm the discontinuing of a product*@
-    <script type="text/javascript">
-        document.getElementById("theDiscontinue").onclick = ConfirmDiscontinue;
-        function ConfirmDiscontinue() {
-            return confirm("Are you sure you want to DISCONTINUE @AlbumId?");
-        }
-        document.getElementById("theDelete").onclick = ConfirmDelete;
-        function ConfirmDelete() {
-            return confirm("Are you sure you want to DELETE @AlbumId?");
-        }
-    </script>
-</form>
+</div>

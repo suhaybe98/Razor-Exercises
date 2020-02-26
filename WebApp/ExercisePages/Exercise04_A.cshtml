@@ -10,7 +10,7 @@
     var queryStatement = "SELECT AlbumId, Title, ArtistId, "
                         + "ReleaseYear, ReleaseLabel "
                         + "FROM Albums "
-                        + "WHERE AlbumId like @0 ";
+                        + "WHERE Title like @0 ";
     var queryProducts = db.Query(queryStatement, partialsearchstring);
 }
 @section banner{<h1>@Page.Title</h1>}
@@ -38,7 +38,7 @@
             }
             else
             {
-                Response.Redirect("Exercise02_C.cshtml?pid=" + productsearch);
+                Response.Redirect("Exercise04_B.cshtml?pid=" + productsearch);
             }
         }
     }
